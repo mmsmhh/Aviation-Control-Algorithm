@@ -1,0 +1,13 @@
+1- First check if the path can be traveled by the current car battery 
+then decrease the car's battery by 1 for every move
+when replanning the path check if the new path can be traveled 
+by the current battery else replan again until
+you find a path you can travel with your current battery
+
+
+
+2- speed
+
+
+
+3- print to check before blocked and after blocked

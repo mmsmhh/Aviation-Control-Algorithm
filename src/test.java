@@ -20,7 +20,7 @@ public class test {
 
 	public static void main(String[] args) throws IOException {
 
-		fileWriter = new FileWriter("output.in");
+		fileWriter = new FileWriter("output.out");
 
 		printWriter = new PrintWriter(fileWriter);
 
@@ -28,7 +28,7 @@ public class test {
 
 		ArrayList<Cell> usedCells = new ArrayList<Cell>();
 
-		for (int i = 0; i < 240; i++) {
+		for (int i = 0; i < 300; i++) {
 
 			Random r = new Random();
 
@@ -43,7 +43,7 @@ public class test {
 			usedCells.add(start);
 
 			Car c = new Car(start, new Cell(getRandomDoubleBetweenRange(0, 80), getRandomDoubleBetweenRange(0, 10),
-					getRandomDoubleBetweenRange(0, 60)), "car" + i);
+					getRandomDoubleBetweenRange(0, 60)), getRandomDoubleBetweenRange(60, 100), "car" + i);
 
 			myCars.add(c);
 		}
