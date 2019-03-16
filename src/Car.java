@@ -10,6 +10,7 @@ public class Car implements Runnable {
 	private int battery;
 
 	String name;
+	
 
 	public Car(Cell start, Cell end, int battery, String name) {
 
@@ -184,7 +185,7 @@ public class Car implements Runnable {
 		test.done += 1;
 		System.out.println(test.done);
 
-		test.printWriter.println(name + " Done remaining " + (240 - test.done));
+		test.printWriter.println(name + " Done remaining " + (test.getCount() - test.done));
 		test.printWriter.flush();
 	}
 

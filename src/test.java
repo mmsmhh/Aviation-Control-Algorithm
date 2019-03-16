@@ -8,6 +8,13 @@ public class test {
 
 	public static volatile int done = 0;
 
+	
+	static int count = 300;
+
+	public static int getCount() {
+		return count;
+	}
+	
 	public static int getRandomDoubleBetweenRange(int min, int max) {
 		int x = (int) ((Math.random() * ((max - min) + 1)) + min);
 		return x;
@@ -28,7 +35,7 @@ public class test {
 
 		ArrayList<Cell> usedCells = new ArrayList<Cell>();
 
-		for (int i = 0; i < 300; i++) {
+		for (int i = 0; i < getCount(); i++) {
 
 			Random r = new Random();
 
