@@ -11,6 +11,7 @@ public class Path extends LinkedList<Cell> {
 
 	private static final long serialVersionUID = -5572661613938583005L;
 	private boolean isComplete = false;
+	private int status = 0;
 
 	/**
 	 * Return true if the path concludes at the CellSpace's goal Cell.
@@ -23,6 +24,14 @@ public class Path extends LinkedList<Cell> {
 
 	protected void setComplete(boolean isComplete) {
 		this.isComplete = isComplete;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 }

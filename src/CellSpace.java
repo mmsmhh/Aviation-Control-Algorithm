@@ -20,19 +20,6 @@ public class CellSpace {
 		super();
 	}
 
-	public void clearSpace(int x, int y, int z) {
-
-		int gX = goalCell.getX();
-		int gY = goalCell.getY();
-		int gZ = goalCell.getZ();
-
-		cellHash.clear();
-
-		setStartCell(x, y, z);
-
-		setGoalCell(gX, gY, gZ);
-	}
-
 	/**
 	 * Returns the specified Cell's CellInfo
 	 * 
@@ -263,7 +250,9 @@ public class CellSpace {
 
 	// TODO Refactor with predeccesors.
 	public LinkedList<Cell> getSuccessors(Cell state) {
+
 		LinkedList<Cell> successors = new LinkedList<Cell>();
+
 		Cell tempState;
 
 		// Generate the successors, starting at the immediate right and moving
@@ -296,8 +285,6 @@ public class CellSpace {
 		tempState = makeNewCell(state.getX() + 1, state.getY() - 1, state.getZ() - 1, new Costs(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-		///////////////
-
 		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ() + 1, new Costs(-1.0, -1.0));
 		successors.addFirst(tempState);
 
@@ -310,9 +297,6 @@ public class CellSpace {
 		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
 		successors.addFirst(tempState);
 
-//		tempState = makeNewCell(state.getX(), state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-//		successors.addFirst(tempState);
-
 		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
 		successors.addFirst(tempState);
 
@@ -324,8 +308,6 @@ public class CellSpace {
 
 		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ() - 1, new Costs(-1.0, -1.0));
 		successors.addFirst(tempState);
-
-		//////////////
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() + 1, state.getZ() + 1, new Costs(-1.0, -1.0));
 		successors.addFirst(tempState);
@@ -356,31 +338,6 @@ public class CellSpace {
 
 		return successors;
 	}
-
-//	public LinkedList<Cell> getPredecessors(Cell state) {
-//		LinkedList<Cell> predecessors = new LinkedList<Cell>();
-//		Cell tempState;
-//
-//		tempState = makeNewCell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-//		predecessors.addFirst(tempState);
-//
-//		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-//		predecessors.addFirst(tempState);
-//
-//		tempState = makeNewCell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-//		predecessors.addFirst(tempState);
-//
-//		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-//		predecessors.addFirst(tempState);
-//
-//		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-//		predecessors.addFirst(tempState);
-//
-//		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-//		predecessors.addFirst(tempState);
-//
-//		return predecessors;
-//	}
 
 	private Cell calculateKey(Cell state) {
 		Cell startCell = getStartCell();

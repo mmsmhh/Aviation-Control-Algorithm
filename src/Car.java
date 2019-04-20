@@ -1,3 +1,6 @@
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.Map.Entry;
 
 public class Car implements Runnable {
 
@@ -7,51 +10,145 @@ public class Car implements Runnable {
 
 	private double fuelTank;
 
-	private double startFuelTank;
+	private double initialFuelTank;
 
-	double kilosTraveled = 0;
+	private double fuelFactor = 1d / 15d;
 
-	String name;
+	private double distanceTraveled;
 
-	private Cell start, end;
+	private int carId;
 
-	double fuelFactor = 1d / 15d;
+	public static volatile Map map;
 
-	public Car(Cell start, Cell end, int fuelTank, String name) {
+	public static volatile Report report = new Report();
 
-		this.start = start;
-		this.end = end;
+	public Car(Cell startCell, Cell goalCell, double fuelTank, int carId) {
 
-		this.name = name;
+		this.carId = carId;
+
 		this.fuelTank = fuelTank;
 
-		this.startFuelTank = fuelTank;
+		this.initialFuelTank = fuelTank;
 
 		space = new CellSpace();
 
 		blockManager = new CostBlockManager(space);
 
-		space.setGoalCell(end.getX(), end.getY(), end.getZ());
+		space.setGoalCell(goalCell.getX(), goalCell.getY(), goalCell.getZ());
 
-		space.setStartCell(start.getX(), start.getY(), start.getZ());
-	}
+		space.setStartCell(startCell.getX(), startCell.getY(), startCell.getZ());
 
-	public void decrementFuelTank() {
-		fuelTank = fuelTank - fuelFactor;
-
-		if (fuelTank < 0)
-			fuelTank = 0;
-	}
-
-	public double getFuelTank() {
-		return fuelTank;
 	}
 
 	public Path findPath() {
 
-		Pathfinder pathfinder = new Pathfinder(blockManager);
+		Path path = new Path();
 
-		Path path = pathfinder.findPath();
+		LinkedList<Cell> potentialNextCells = new LinkedList<Cell>();
+
+		Cell currentCell = space.getStartCell();
+
+		map.blockCell(currentCell);
+
+		path.add(currentCell);
+
+		report.addToFullReport(carId + ": I am currently in " + currentCell);
+
+		if (space.getG(space.getStartCell()) == Double.POSITIVE_INFINITY) {
+			return path;
+		}
+
+		boolean isTrapped = false;
+
+		while (!path.isComplete()) {
+
+			potentialNextCells = space.getSuccessors(currentCell);
+
+			if (potentialNextCells.isEmpty()) {
+				return path;
+			}
+
+			double minimumCost = Double.POSITIVE_INFINITY;
+
+			Cell minimumCell = new Cell();
+
+			for (Cell potentialNextCell : potentialNextCells) {
+
+				if (!map.contains(potentialNextCell) || map.isCellBlocked(potentialNextCell)) {
+					continue;
+				} else {
+					isTrapped = true;
+				}
+
+				double costToMove = Geometry.euclideanDistance(currentCell, potentialNextCell);
+				double euclideanDistance = Geometry.euclideanDistance(potentialNextCell, space.getGoalCell())
+						+ Geometry.euclideanDistance(space.getStartCell(), potentialNextCell);
+				costToMove += space.getG(potentialNextCell);
+
+				// If the cost to move is essentially zero ...
+				if (space.isClose(costToMove, minimumCost)) {
+					if (0 > euclideanDistance) {
+
+						minimumCost = costToMove;
+						minimumCell = potentialNextCell;
+					}
+				} else if (costToMove < minimumCost) {
+
+					minimumCost = costToMove;
+					minimumCell = potentialNextCell;
+				}
+
+			}
+
+			if (isTrapped) {
+
+				potentialNextCells.clear();
+
+				if (!map.contains(minimumCell) || map.isCellBlocked(minimumCell)) {
+					continue;
+				}
+
+				map.blockCell(minimumCell);
+
+				map.unblockCell(currentCell);
+
+				currentCell = new Cell(minimumCell);
+
+				report.addToFullReport(carId + ": " + "I am moving now to " + currentCell);
+
+				if (!decrementFuelTank(fuelFactor) && !path.isComplete()) {
+					map.unblockCell(currentCell);
+					path.setStatus(-1);
+					return path;
+				}
+
+				distanceTraveled++;
+
+				path.add(currentCell);
+
+				report.addToFullReport(carId + ": I am currently in " + currentCell);
+
+				path.setComplete(blockManager.getSpace().getGoalCell().equals(path.getLast()));
+
+			} else {
+
+				if (!decrementFuelTank(fuelFactor / 4) && !path.isComplete()) {
+					map.unblockCell(currentCell);
+					path.setStatus(-1);
+					return path;
+				}
+
+				report.addToFullReport(carId + ": replanning!");
+
+			}
+
+			if (path.isComplete()) {
+				map.unblockCell(currentCell);
+				break;
+			}
+		}
+
+		path.setStatus(1);
 
 		return path;
 	}
@@ -59,168 +156,78 @@ public class Car implements Runnable {
 	@Override
 	public void run() {
 
+		report.addToFullReport(
+				carId + ": Engine started start cell is: " + getStartCell() + " goal cell is: " + getGoalCell());
+
 		Path path = findPath();
 
-		test.printWriter.println(name + ": " + "my path is " + path);
-		test.printWriter.flush();
+		if (path.getStatus() == 1) {
 
-		if (getFuelTank() < (path.size() - 1) * fuelFactor) {
+			System.out.println(report.incrementNumberOfArrivedCars());
 
-			test.printWriter
-					.println(name + ": Your current tank isn't enough to start you should visit the fuel station");
-			test.printWriter.flush();
+			report.addToFullReport(carId + ": Done " + "Remaining cars: " + report.getNumberOfRemainingCars()
+					+ " Arrived cars: " + report.getNumberOfArrivedCars() + " Failed cars: "
+					+ report.getNumberOfFailedCars() + " Never ran Cars: " + report.getnumberOfNeverStartedCars());
 
-			test.report.incrementNumberOfNeverRunnedCars();
+			report.addToMiniReport(carId + ": I started from " + space.getStartCell()
+					+ " and reached my final destination " + space.getGoalCell() + " with average speed of 60KM/H in "
+					+ Math.round((distanceTraveled / 60d) * 100d) / 100d + "H " + "I traveled a total distance of "
+					+ distanceTraveled + "KM My fuel tank in the beginning was " + initialFuelTank
+					+ " at the end it becomes " + Math.round((getFuelTank()) * 100d) / 100d);
 
-			test.printWriter.println(name + ": Done " + "Remaining cars: " + test.report.getNumberOfRemainingCars()
-					+ " Arrived cars: " + test.report.getNumberOfArrivedCars() + " Failed cars: "
-					+ test.report.getNumberOfFailedCars() + " Never run Cars: "
-					+ test.report.getnumberOfNeverRunnedCars());
-			test.printWriter.flush();
+		} else if (path.getStatus() == -1) {
 
-			test.report.addReport(name + ": I never started because the fuel was not enough to start"
-					+ " the distance was " + (path.size() - 1) + "KM which needed " + ((path.size() - 1) * fuelFactor)
-					+ " Liter in the fuel tank but the tank was having " + getFuelTank());
+			report.incrementNumberOfFailedCars();
 
-			return;
+			report.addToFullReport(carId + ": You current fuel tank is not enough to continue your journy");
+
+			report.addToFullReport(carId + ": Done " + "Remaining cars: " + report.getNumberOfRemainingCars()
+					+ " Arrived cars: " + report.getNumberOfArrivedCars() + " Failed cars: "
+					+ report.getNumberOfFailedCars() + " Never Started Cars: " + report.getnumberOfNeverStartedCars());
+
+			report.addToMiniReport(
+					carId + ": I started from " + space.getStartCell() + " and didn't reach my final destination "
+							+ space.getGoalCell() + " the remaining distance was " + (path.size() - 1)
+							+ "KM which needed " + Math.round(((path.size() - 1) * fuelFactor) * 100d) / 100d
+							+ " Liter in the fuel tank but the tank was having "
+							+ Math.round((getFuelTank()) * 100d) / 100d + " Liter at this period of time");
 		}
 
-		Cell currentCell = path.removeFirst();
+		if (report.isLastCar()) {
 
-		synchronized (test.BlockedCells) {
-			test.BlockedCells.add(currentCell);
-		}
+			for (Entry<Cell, Boolean> entry : Car.map.map.entrySet()) {
 
-		test.printWriter.println(name + ": " + "I am currently in " + currentCell);
-		test.printWriter.flush();
+				Cell key = entry.getKey();
 
-		while (!path.isEmpty()) {
+				boolean value = entry.getValue();
 
-			Cell nextCell = path.removeFirst();
-
-			if (test.BlockedCells.checkIfBlockedCellsContains(nextCell)) {
-
-				test.printWriter.println(name + ": " + "The " + nextCell + " is blocked rePlanning now");
-				test.printWriter.flush();
-
-				space.clearSpace(currentCell.getX(), currentCell.getY(), currentCell.getZ());
-
-				synchronized (test.BlockedCells) {
-					blockManager.blockCell(space.makeNewCell(nextCell.getX(), nextCell.getY(), nextCell.getZ()));
-				}
-
-				path = findPath();
-
-				while (getFuelTank() < (path.size() - 1) * fuelFactor) {
-
-					if (decrementFuelAndCheckIfFailed()) {
-
-						test.printWriter.println(name + ": You current battery is not enough to continue your journy");
-						test.printWriter.flush();
-						test.report.incrementNumberOfFailedCars();
-
-						test.printWriter
-								.println(name + ": Done " + "Remaining cars: " + test.report.getNumberOfRemainingCars()
-										+ " Arrived cars: " + test.report.getNumberOfArrivedCars() + " Failed cars: "
-										+ test.report.getNumberOfFailedCars() + " Never run Cars: "
-										+ test.report.getnumberOfNeverRunnedCars());
-						test.printWriter.flush();
-
-						test.report.addReport(name + ": I started from " + start
-								+ " and didn't reach my final destination " + end + " the remaining distance was "
-								+ (path.size() - 1) + "KM which needed " + ((path.size() - 1) * fuelFactor)
-								+ " Liter in the fuel tank but the tank was having " + getFuelTank()
-								+ " Liter at this period of time");
-						return;
-					}
-
-					test.printWriter.println(name
-							+ ": You current fuel tank is not enough to go to the new replanned path replanning again"
-							+ " your current fuel tank is: " + getFuelTank() + " liter the fuel tank needed is: "
-							+ (path.size() - 1) * fuelFactor + " liter");
-					test.printWriter.flush();
-
-					space.clearSpace(currentCell.getX(), currentCell.getY(), currentCell.getZ());
-
-					if (test.BlockedCells.checkIfBlockedCellsContains(nextCell)) {
-						synchronized (test.BlockedCells) {
-							blockManager
-									.blockCell(space.makeNewCell(nextCell.getX(), nextCell.getY(), nextCell.getZ()));
-						}
-					}
-
-					path = findPath();
-
-				}
-
-				currentCell = path.removeFirst();
-
-				test.printWriter.println(name + ": " + "Done from replanning the new path is " + path);
-				test.printWriter.flush();
-
-			} else {
-
-				synchronized (test.BlockedCells) {
-					test.BlockedCells.add(nextCell);
-				}
-
-				test.printWriter.println(name + ": " + "I am moving now to " + nextCell);
-				test.printWriter.flush();
-
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-
-				synchronized (test.BlockedCells) {
-					test.BlockedCells.remove(currentCell);
-				}
-
-				currentCell = nextCell;
-
-				kilosTraveled++;
-
-				test.printWriter.println(name + ": " + "I am currently in " + currentCell);
-				test.printWriter.flush();
-
+				if (value)
+					report.addToMapReport(key + " = " + value);
 			}
 
-			decrementFuelTank();
+			report.printReports();
 
-		}
-
-		synchronized (test.BlockedCells) {
-			test.BlockedCells.remove(currentCell);
-		}
-
-		test.printWriter.println(name + ": " + "I arrived");
-		test.printWriter.flush();
-
-		System.out.println(test.report.incrementNumberOfArrivedCars());
-
-		test.printWriter.println(
-				name + ": Done " + "Remaining cars: " + test.report.getNumberOfRemainingCars() + " Arrived cars: "
-						+ test.report.getNumberOfArrivedCars() + " Failed cars: " + test.report.getNumberOfFailedCars()
-						+ " Never Runned Cars: " + test.report.getnumberOfNeverRunnedCars());
-		test.printWriter.flush();
-
-		test.report.addReport(name + ": I started from " + start + " and reached my final destination " + end
-				+ " with average speed of 60KM/H in " + kilosTraveled / 60d + "H " + "I traveled a total distance of "
-				+ kilosTraveled + "KM My fuel tank in the beginning was " + startFuelTank + " at the end it becomes "
-				+ fuelTank);
-
-		if (test.report.isLastCar()) {
-			test.report.printReport();
 		}
 
 	}
 
-	private boolean decrementFuelAndCheckIfFailed() {
+	public double getFuelTank() {
+		return fuelTank;
+	}
 
-		decrementFuelTank();
+	public boolean decrementFuelTank(double value) {
 
-		return getFuelTank() <= 0;
+		fuelTank -= value;
 
+		return fuelTank >= fuelFactor;
+
+	}
+
+	public Cell getStartCell() {
+		return space.getStartCell();
+	}
+
+	public Cell getGoalCell() {
+		return space.getGoalCell();
 	}
 }

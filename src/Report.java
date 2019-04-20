@@ -5,49 +5,75 @@ import java.util.ArrayList;
 
 public class Report {
 
-	ArrayList<String> carsReport = new ArrayList<String>();
+	ArrayList<String> carsFullReport = new ArrayList<String>();
+	ArrayList<String> carsMiniReport = new ArrayList<String>();
 
-	int numberOfCars = 0;
+	public static int numberOfCars = 0;
 
 	int numberOfArrivedCars = 0;
 
 	int numberOfFailedCars = 0;
 
-	int numberOfNeverRunnedCars = 0;
+	int numberOfNeverStartedCars = 0;
 
-	public Report(int numberOfCars) {
-		this.numberOfCars = numberOfCars;
-	}
+	FileWriter fileWriterFull;
 
-	public void addReport(String report) {
-		carsReport.add(report);
-	}
+	PrintWriter printWriterFull;
 
-	public void printReport() {
+	FileWriter fileWriterMini;
 
+	PrintWriter printWriterMini;
+
+	FileWriter fileWriterMap;
+
+	PrintWriter printWriterMap;
+
+	public Report() {
 		try {
 
-			FileWriter fileWriter = new FileWriter("report.out");
+			fileWriterFull = new FileWriter("fullReport.out");
+			printWriterFull = new PrintWriter(fileWriterFull);
 
-			PrintWriter printWriter = new PrintWriter(fileWriter);
+			fileWriterMini = new FileWriter("miniReport.out");
+			printWriterMini = new PrintWriter(fileWriterMini);
 
-			for (String report : carsReport) {
-				printWriter.println(report);
-				printWriter.flush();
-			}
-
-			fileWriter = new FileWriter("miniReport.out");
-
-			printWriter = new PrintWriter(fileWriter);
-
-			printWriter.println(" Arrived cars: " + getNumberOfArrivedCars() + " Failed cars: "
-					+ getNumberOfFailedCars() + " Never run Cars: " + getnumberOfNeverRunnedCars());
-			printWriter.flush();
+			fileWriterMap = new FileWriter("mapReport.out");
+			printWriterMap = new PrintWriter(fileWriterMap);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
+	public synchronized void addToFullReport(String report) {
+		printWriterFull.println(report);
+	}
+
+	public synchronized void addToMiniReport(String report) {
+		printWriterMini.println(report);
+	}
+
+	public void addToMapReport(String line) {
+		printWriterMap.println(line);
+	}
+
+	public void printReports() {
+
+		printWriterMini.println("Arrived cars: " + getNumberOfArrivedCars() + " Failed cars: " + getNumberOfFailedCars()
+				+ " Never run Cars: " + getnumberOfNeverStartedCars());
+		printWriterMini.flush();
+
+		printWriterFull.close();
+
+		printWriterMini.close();
+		
+		printWriterMap.close();
+
+
+	}
+
+	public static void setNumberOfCars(int numberOfCars) {
+		Report.numberOfCars = numberOfCars;
 	}
 
 	public int getNumberOfCars() {
@@ -62,8 +88,8 @@ public class Report {
 		return numberOfFailedCars;
 	}
 
-	public int getnumberOfNeverRunnedCars() {
-		return numberOfNeverRunnedCars;
+	public int getnumberOfNeverStartedCars() {
+		return numberOfNeverStartedCars;
 	}
 
 	public synchronized int incrementNumberOfArrivedCars() {
@@ -76,13 +102,13 @@ public class Report {
 		return numberOfFailedCars;
 	}
 
-	public synchronized int incrementNumberOfNeverRunnedCars() {
-		numberOfNeverRunnedCars++;
-		return numberOfNeverRunnedCars;
+	public synchronized int incrementnumberOfNeverStartedCars() {
+		numberOfNeverStartedCars++;
+		return numberOfNeverStartedCars;
 	}
 
 	public int getNumberOfRemainingCars() {
-		return numberOfCars - (numberOfArrivedCars + numberOfFailedCars + numberOfNeverRunnedCars);
+		return numberOfCars - (numberOfArrivedCars + numberOfFailedCars + numberOfNeverStartedCars);
 	}
 
 	public boolean isLastCar() {

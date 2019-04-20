@@ -1,175 +1,69 @@
-import java.io.FileWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
-public class test {
+public class Main {
 
-	public static volatile int numberOfArrivedCars = 0;
-
-	public static volatile int numberOfFailedCars = 0;
-
-	static int factor = 1;
-
-	static int maxX = 80 * factor;
-	static int maxY = 60 * factor;
-	static int maxZ = 10;
-
-	public static volatile BlockedCells BlockedCells = new BlockedCells();
-
-	public static volatile FileWriter fileWriter;
-
-	public static volatile PrintWriter printWriter;
-	public static volatile Report report;
+	public static ArrayList<Car> allCars = new ArrayList<Car>();
 
 	public static void main(String[] args) throws IOException {
-
-		fileWriter = new FileWriter("output.out");
-
-		printWriter = new PrintWriter(fileWriter);
-
-		report = new Report(1000 * factor);
-
-		createCarsAndRunThem();
-
+		loadAndRunCars();
 	}
 
-	public static void createCarsAndRunThem() {
+	private static void loadAndRunCars() throws FileNotFoundException {
 
-		ArrayList<Cell> usedCells = new ArrayList<Cell>();
+		Scanner sc = new Scanner(new File("sample1.in"));
 
-		ArrayList<Car> myCars = new ArrayList<Car>();
+		int n = sc.nextInt();
 
-		int carCounter = 1;
+		int maxX = sc.nextInt();
 
-		int part = report.getNumberOfCars() / 3;
+		int maxY = sc.nextInt();
 
-		ArrayList<Integer> fuelTanks = new ArrayList<Integer>();
+		int maxZ = sc.nextInt();
 
-		// part 1
-		for (int i = 0; i < part; i++) {
+		sc.nextLine();
 
-			if (i % 10 == 0) {
-				fuelTanks.clear();
-				fuelTanks.add(30);
-				fuelTanks.add(35);
-				fuelTanks.add(40);
-				fuelTanks.add(45);
-				fuelTanks.add(48);
-				fuelTanks.add(50);
-				fuelTanks.add(55);
-				fuelTanks.add(58);
-				fuelTanks.add(60);
-				fuelTanks.add(65);
+		Car.map = new Map(maxX, maxY, maxZ);
+
+		Report.setNumberOfCars(n);
+
+		System.out.println(n);
+		System.out.println(maxX);
+		System.out.println(maxY);
+		System.out.println(maxZ);
+
+		Scanner ss = new Scanner(System.in);
+
+		for (int i = 0; i < n; i++) {
+
+			String[] line = sc.nextLine().split(",");
+
+			Cell startCell = new Cell(Integer.parseInt(line[0]), Integer.parseInt(line[1]), Integer.parseInt(line[2]));
+			Cell goalCell = new Cell(Integer.parseInt(line[3]), Integer.parseInt(line[4]), Integer.parseInt(line[5]));
+			double fuelTank = Double.parseDouble(line[6]);
+
+			if (!Car.map.map.containsKey(startCell) || !Car.map.map.containsKey(goalCell)) {
+				System.err.println(startCell);
+				System.err.println(goalCell);
+				System.err.println(i);
+				System.exit(0);
 			}
 
-			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-					getRandomDoubleBetweenRange(0, maxZ / 4));
+			Car car = new Car(startCell, goalCell, fuelTank, i + 1);
 
-			while (usedCells.contains(start)) {
-				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-						getRandomDoubleBetweenRange(0, maxZ / 4));
-			}
+			Thread carThread = new Thread(car);
 
-			usedCells.add(start);
+			carThread.start();
 
-			Car c = new Car(start,
-					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-							getRandomDoubleBetweenRange(0, maxZ / 4)),
-					fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), "car" + carCounter++);
-
-			myCars.add(c);
-
-			System.out.println("Car " + (carCounter - 1) + " has been created with fuel tank " + c.getFuelTank());
 		}
 
-		// part2
-		for (int i = 0; i < part; i++) {
+		sc.close();
 
-			if (i % 10 == 0) {
-				fuelTanks.clear();
-				fuelTanks.add(30);
-				fuelTanks.add(35);
-				fuelTanks.add(40);
-				fuelTanks.add(45);
-				fuelTanks.add(48);
-				fuelTanks.add(50);
-				fuelTanks.add(55);
-				fuelTanks.add(58);
-				fuelTanks.add(60);
-				fuelTanks.add(65);
-			}
+		System.out.println("Done loading and running all cars");
 
-			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 3), getRandomDoubleBetweenRange(0, maxY),
-					getRandomDoubleBetweenRange(0, maxZ / 3));
-
-			while (usedCells.contains(start)) {
-				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 3), getRandomDoubleBetweenRange(0, maxY),
-						getRandomDoubleBetweenRange(0, maxZ / 3));
-			}
-
-			usedCells.add(start);
-
-			Car c = new Car(start,
-					new Cell(getRandomDoubleBetweenRange(maxX / 2, maxX), getRandomDoubleBetweenRange(0, maxY),
-							getRandomDoubleBetweenRange(maxZ / 2, maxZ)),
-					fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), "car" + carCounter++);
-
-			myCars.add(c);
-
-			System.out.println("Car " + (carCounter - 1) + " has been created with fuel tank " + c.getFuelTank());
-		}
-
-		// part 3
-		for (int i = 0; i < report.getNumberOfCars() - 2 * part; i++) {
-
-			if (i % 10 == 0) {
-				fuelTanks.clear();
-				fuelTanks.add(30);
-				fuelTanks.add(35);
-				fuelTanks.add(40);
-				fuelTanks.add(45);
-				fuelTanks.add(48);
-				fuelTanks.add(50);
-				fuelTanks.add(55);
-				fuelTanks.add(58);
-				fuelTanks.add(60);
-				fuelTanks.add(65);
-			}
-
-			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 6), getRandomDoubleBetweenRange(0, maxY),
-					getRandomDoubleBetweenRange(0, maxZ / 6));
-
-			while (usedCells.contains(start)) {
-				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 6), getRandomDoubleBetweenRange(0, maxY),
-						getRandomDoubleBetweenRange(0, maxZ / 6));
-			}
-
-			usedCells.add(start);
-
-			Car c = new Car(start,
-					new Cell(getRandomDoubleBetweenRange(maxX + maxX / 6, maxX), getRandomDoubleBetweenRange(0, maxY),
-							getRandomDoubleBetweenRange(maxZ + maxZ / 6, maxZ)),
-					fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), "car" + carCounter++);
-
-			myCars.add(c);
-
-			System.out.println("Car " + (carCounter - 1) + " has been created with fuel tank " + c.getFuelTank());
-		}
-
-		System.out.println("Done Creating all Cars");
-
-		for (Car c : myCars) {
-			Thread t = new Thread(c);
-			t.start();
-		}
-
-		System.out.println("Done Running all Cars");
-	}
-
-	public static int getRandomDoubleBetweenRange(int min, int max) {
-		int x = (int) ((Math.random() * ((max - min) + 1)) + min);
-		return x;
 	}
 
 }
