@@ -82,4 +82,16 @@ public class Map {
 		return maxZ;
 	}
 
+	public boolean inRange(Cell cell) {
+
+		boolean notMore = cell.getX() <= getMaxX() && cell.getY() <= getMaxY() && cell.getZ() <= getMaxZ();
+
+		boolean notLess = cell.getX() >= 0 && cell.getY() >= 0 && cell.getZ() >= 0;
+
+		boolean inRange = notMore && notLess;
+
+		return inRange;
+
+	}
+
 }

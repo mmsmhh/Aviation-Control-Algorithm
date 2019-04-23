@@ -5,8 +5,6 @@ public class Car implements Runnable {
 
 	private CellSpace space;
 
-	private CostBlockManager blockManager;
-
 	private double fuelTank;
 
 	private double initialFuelTank;
@@ -31,240 +29,10 @@ public class Car implements Runnable {
 
 		space = new CellSpace();
 
-		blockManager = new CostBlockManager(space);
-
 		space.setGoalCell(goalCell.getX(), goalCell.getY(), goalCell.getZ());
 
 		space.setStartCell(startCell.getX(), startCell.getY(), startCell.getZ());
 
-	}
-
-	public Path findPath() {
-
-		Path path = new Path();
-
-		LinkedList<Cell> potentialNextCells = new LinkedList<Cell>();
-
-		if (!isFuelEnough(space.getStartCell(), space.getGoalCell())) {
-			path.setStatus(-2);
-			return path;
-		}
-
-		Cell currentCell = space.getStartCell();
-
-		map.blockCell(currentCell);
-
-		path.add(currentCell);
-
-		report.addToFullReport(carId + ": I am currently in " + currentCell);
-
-		if (space.getG(space.getStartCell()) == Double.POSITIVE_INFINITY) {
-			return path;
-		}
-
-		boolean isTrapped = false;
-
-		while (!path.isComplete()) {
-
-			potentialNextCells = space.getSuccessors(currentCell);
-
-			if (potentialNextCells.isEmpty()) {
-				return path;
-			}
-
-			double minimumCost = Double.POSITIVE_INFINITY;
-
-			Cell minimumCell = new Cell();
-
-			for (Cell potentialNextCell : potentialNextCells) {
-
-				if (!map.contains(potentialNextCell) || map.isCellBlocked(potentialNextCell)) {
-					continue;
-				} else {
-					isTrapped = true;
-				}
-
-				double costToMove = Geometry.euclideanDistance(currentCell, potentialNextCell);
-				double euclideanDistance = Geometry.euclideanDistance(potentialNextCell, space.getGoalCell())
-						+ Geometry.euclideanDistance(space.getStartCell(), potentialNextCell);
-				costToMove += space.getG(potentialNextCell);
-
-				// If the cost to move is essentially zero ...
-				if (space.isClose(costToMove, minimumCost)) {
-					if (0 > euclideanDistance) {
-
-						minimumCost = costToMove;
-						minimumCell = potentialNextCell;
-					}
-				} else if (costToMove < minimumCost) {
-
-					minimumCost = costToMove;
-					minimumCell = potentialNextCell;
-				}
-
-			}
-
-			if (isTrapped) {
-
-				potentialNextCells.clear();
-
-				if (!map.contains(minimumCell) || map.isCellBlocked(minimumCell)) {
-					continue;
-				} else {
-					map.blockCell(minimumCell);
-				}
-
-				report.addToFullReport(carId + ": " + "I am moving now to " + currentCell);
-
-				map.unblockCell(currentCell);
-
-				currentCell = new Cell(minimumCell);
-
-				distanceTraveled++;
-
-				path.add(currentCell);
-
-				report.addToFullReport(carId + ": I am currently in " + currentCell);
-
-				if (!decrementFuelTank(fuelFactor) && !path.isComplete()) {
-					map.unblockCell(currentCell);
-					path.setStatus(-1);
-					return path;
-				}
-
-				path.setComplete(blockManager.getSpace().getGoalCell().equals(path.getLast()));
-
-			} else {
-
-				if (!decrementFuelTank(fuelFactor / 4) && !path.isComplete()) {
-					map.unblockCell(currentCell);
-					path.setStatus(-1);
-					return path;
-				}
-
-				report.addToFullReport(carId + ": replanning!");
-
-			}
-
-			if (path.isComplete()) {
-				map.unblockCell(currentCell);
-				break;
-			}
-
-			if (!ICanSurvive(currentCell)) {
-
-				Path landing = generateLandingPath(currentCell);
-
-				report.addToFullReport(carId + ": emergency landing activated");
-
-				if (landing == null) {
-					map.unblockCell(currentCell);
-					path.setStatus(2);
-					return path;
-				}
-
-				while (!landing.isEmpty()) {
-
-					Cell landingCell = landing.removeFirst();
-
-					report.addToFullReport(carId + ": " + "I am moving now to " + landingCell);
-
-					map.unblockCell(currentCell);
-
-					distanceTraveled++;
-
-					if (!decrementFuelTank(fuelFactor)) {
-						path.setStatus(-1);
-						for (Cell c : landing) {
-							map.unblockCell(c);
-						}
-						return path;
-					}
-
-					currentCell = landingCell;
-
-					path.add(currentCell);
-
-					report.addToFullReport(carId + ": I am currently in " + currentCell);
-
-					if (landing.isEmpty()) {
-						map.unblockCell(currentCell);
-						path.setStatus(2);
-						return path;
-					}
-
-				}
-
-			}
-
-		}
-
-		path.setStatus(1);
-
-		return path;
-	}
-
-	private Path generateLandingPath(Cell currentCell) {
-
-		Path path = new Path();
-
-		int x = currentCell.getX();
-		int y = currentCell.getY();
-		int z = currentCell.getZ();
-
-		int sign = -1;
-
-		if (y == 0)
-			return null;
-
-		while (y > 0) {
-
-			if (x == 0) {
-				sign = 1;
-			} else if (x == map.getMaxX()) {
-				sign = -1;
-			}
-
-			x += sign;
-
-			y--;
-
-			Cell newCell = new Cell(x, y, z);
-
-			if (map.isCellBlocked(newCell)) {
-				y++;
-				x -= sign;
-
-				if (!decrementFuelTank(fuelFactor / 8)) {
-					map.unblockCell(currentCell);
-					path.setStatus(-1);
-					for (Cell c : path) {
-						map.unblockCell(c);
-					}
-					return path;
-				}
-
-				continue;
-			}
-			map.blockCell(newCell);
-
-			path.add(newCell);
-
-		}
-
-		return path;
-	}
-
-	private boolean ICanSurvive(Cell cell) {
-
-		double fuelGoalCellRatio = (Geometry.euclideanDistance(cell, getGoalCell()) * fuelFactor) / getFuelTank();
-
-		return fuelGoalCellRatio < 0.7;
-	}
-
-	private boolean isFuelEnough(Cell startCell, Cell goalCell) {
-
-		return Geometry.euclideanDistance(startCell, goalCell) * fuelFactor <= getFuelTank();
 	}
 
 	@Override
@@ -363,19 +131,259 @@ public class Car implements Runnable {
 
 	}
 
-	public double getFuelTank() {
-		return fuelTank;
+	public Path findPath() {
+
+		Path path = new Path();
+
+		LinkedList<Cell> potentialNextCells = new LinkedList<Cell>();
+
+		if (!isFuelEnough(space.getStartCell(), space.getGoalCell())) {
+			path.setStatus(-2);
+			return path;
+		}
+
+		Cell currentCell = space.getStartCell();
+
+		map.blockCell(currentCell);
+
+		path.add(currentCell);
+
+		report.addToFullReport(carId + ": I am currently in " + currentCell);
+
+		if (space.getG(space.getStartCell()) == Double.POSITIVE_INFINITY) {
+			return path;
+		}
+
+		boolean isTrapped = false;
+
+		while (!path.isComplete()) {
+
+			potentialNextCells = space.getSuccessors(currentCell);
+
+			if (potentialNextCells.isEmpty()) {
+				return path;
+			}
+
+			double minimumCost = Double.POSITIVE_INFINITY;
+
+			Cell minimumCell = new Cell();
+
+			for (Cell potentialNextCell : potentialNextCells) {
+
+				if (!map.contains(potentialNextCell) || map.isCellBlocked(potentialNextCell)) {
+					continue;
+				} else {
+					isTrapped = true;
+				}
+
+				double costToMove = Geometry.euclideanDistance(currentCell, potentialNextCell);
+				double euclideanDistance = Geometry.euclideanDistance(potentialNextCell, space.getGoalCell())
+						+ Geometry.euclideanDistance(space.getStartCell(), potentialNextCell);
+				costToMove += space.getG(potentialNextCell);
+
+				// If the cost to move is essentially zero ...
+				if (space.isClose(costToMove, minimumCost)) {
+					if (0 > euclideanDistance) {
+
+						minimumCost = costToMove;
+						minimumCell = potentialNextCell;
+					}
+				} else if (costToMove < minimumCost) {
+
+					minimumCost = costToMove;
+					minimumCell = potentialNextCell;
+				}
+
+			}
+
+			if (isTrapped) {
+
+				potentialNextCells.clear();
+
+				if (!map.contains(minimumCell) || map.isCellBlocked(minimumCell)) {
+					continue;
+				} else {
+					map.blockCell(minimumCell);
+				}
+
+				report.addToFullReport(carId + ": " + "I am moving now to " + currentCell);
+
+				map.unblockCell(currentCell);
+
+				currentCell = new Cell(minimumCell);
+
+				distanceTraveled++;
+
+				decrementFuelTank(fuelFactor);
+
+				path.add(currentCell);
+
+				report.addToFullReport(carId + ": I am currently in " + currentCell);
+
+				if (isTankEmpty() && !path.isComplete()) {
+					map.unblockCell(currentCell);
+					path.setStatus(-1);
+					return path;
+				}
+
+				path.setComplete(space.getGoalCell().equals(path.getLast()));
+
+			} else {
+
+				decrementFuelTank(fuelFactor / 4);
+
+				if (isTankEmpty() && !path.isComplete()) {
+					map.unblockCell(currentCell);
+					path.setStatus(-1);
+					return path;
+				}
+
+				report.addToFullReport(carId + ": replanning!");
+
+			}
+
+			if (path.isComplete()) {
+				map.unblockCell(currentCell);
+				break;
+			}
+
+			if (emergencyLandingCheck(currentCell)) {
+
+				Path landing = generateLandingPath(currentCell);
+
+				report.addToFullReport(carId + ": emergency landing activated");
+
+				if (landing == null) {
+					map.unblockCell(currentCell);
+					path.setStatus(2);
+					return path;
+				}
+
+				while (!landing.isEmpty()) {
+
+					Cell landingCell = landing.removeFirst();
+
+					report.addToFullReport(carId + ": " + "I am moving now to " + landingCell);
+
+					map.unblockCell(currentCell);
+
+					distanceTraveled++;
+
+					decrementFuelTank(fuelFactor);
+
+					if (isTankEmpty()) {
+						path.setStatus(-1);
+						for (Cell c : landing) {
+							map.unblockCell(c);
+						}
+						return path;
+					}
+
+					currentCell = landingCell;
+
+					path.add(currentCell);
+
+					report.addToFullReport(carId + ": I am currently in " + currentCell);
+
+					if (landing.isEmpty()) {
+						map.unblockCell(currentCell);
+						path.setStatus(2);
+						return path;
+					}
+
+				}
+
+			}
+
+		}
+
+		path.setStatus(1);
+
+		return path;
 	}
 
-	public boolean decrementFuelTank(double value) {
+	// needs refactoring
+	private Path generateLandingPath(Cell currentCell) {
+
+		Path path = new Path();
+
+		int x = currentCell.getX();
+		int y = currentCell.getY();
+		int z = currentCell.getZ();
+
+		int sign = -1;
+
+		if (y == 0)
+			return null;
+
+		while (y > 0) {
+
+			if (x == 0) {
+				sign = 1;
+			} else if (x == map.getMaxX()) {
+				sign = -1;
+			}
+
+			x += sign;
+
+			y--;
+
+			Cell newCell = new Cell(x, y, z);
+
+			if (map.isCellBlocked(newCell)) {
+				y++;
+				x -= sign;
+
+				decrementFuelTank(fuelFactor / 8);
+
+				if (isTankEmpty()) {
+					map.unblockCell(currentCell);
+					path.setStatus(-1);
+					for (Cell c : path) {
+						map.unblockCell(c);
+					}
+					return path;
+				}
+
+				continue;
+			}
+			map.blockCell(newCell);
+
+			path.add(newCell);
+
+		}
+
+		return path;
+	}
+
+	private boolean emergencyLandingCheck(Cell cell) {
+
+		double fuelGoalCellRatio = (Geometry.euclideanDistance(cell, getGoalCell()) * fuelFactor) / getFuelTank();
+
+		return fuelGoalCellRatio > 0.7;
+	}
+
+	private boolean isFuelEnough(Cell startCell, Cell goalCell) {
+
+		return Geometry.euclideanDistance(startCell, goalCell) * fuelFactor <= getFuelTank();
+	}
+
+	private boolean isTankEmpty() {
+		return fuelTank == 0;
+	}
+
+	private void decrementFuelTank(double value) {
 
 		fuelTank -= value;
 
-		if (fuelTank < 0)
+		if (fuelTank < fuelFactor) {
 			fuelTank = 0;
+		}
 
-		return fuelTank >= fuelFactor;
+	}
 
+	public double getFuelTank() {
+		return fuelTank;
 	}
 
 	public Cell getStartCell() {
@@ -386,15 +394,4 @@ public class Car implements Runnable {
 		return space.getGoalCell();
 	}
 
-	public boolean inRange(Cell cell) {
-
-		boolean notMore = cell.getX() <= map.getMaxX() && cell.getY() <= map.getMaxY() && cell.getZ() <= map.getMaxZ();
-
-		boolean notLess = cell.getX() >= 0 && cell.getY() >= 0 && cell.getZ() >= 0;
-
-		boolean inRange = notMore && notLess;
-
-		return inRange;
-
-	}
 }
