@@ -8,8 +8,8 @@ public class generateStaticRandomSample {
 	static int factor = 5;
 
 	static int maxX = 80 * factor;
-	static int maxY = 60 * factor;
-	static int maxZ = 15;
+	static int maxZ = 60 * factor;
+	static int maxY = 15;
 
 	static int carsnum = (int) (1000 * factor);
 
@@ -59,19 +59,17 @@ public class generateStaticRandomSample {
 				fuelTanks.add(65);
 			}
 
-			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
+			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 4), 0,
 					getRandomDoubleBetweenRange(0, maxZ / 4));
 
 			while (usedCells.contains(start) || (!Car.map.contains(start))) {
-				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-						getRandomDoubleBetweenRange(0, maxZ / 4));
+				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 4), 0, getRandomDoubleBetweenRange(0, maxZ / 4));
 			}
 
 			usedCells.add(start);
 
 			Car c = new Car(start,
-					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-							getRandomDoubleBetweenRange(0, maxZ / 4)),
+					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), 0, getRandomDoubleBetweenRange(0, maxZ / 4)),
 					fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), carCounter++);
 
 			while (!Car.map.contains(c.getStartCell()) || !Car.map.contains(c.getStartCell()))
@@ -79,8 +77,7 @@ public class generateStaticRandomSample {
 			{
 
 				c = new Car(start,
-						new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-								getRandomDoubleBetweenRange(0, maxZ / 4)),
+						new Cell(getRandomDoubleBetweenRange(0, maxX / 4), 0, getRandomDoubleBetweenRange(0, maxZ / 4)),
 						fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), carCounter++);
 
 			}
@@ -110,19 +107,17 @@ public class generateStaticRandomSample {
 				fuelTanks.add(65);
 			}
 
-			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 3), getRandomDoubleBetweenRange(0, maxY),
+			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 3), 0,
 					getRandomDoubleBetweenRange(0, maxZ / 3));
 
 			while (usedCells.contains(start) || (!Car.map.contains(start))) {
-				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 3), getRandomDoubleBetweenRange(0, maxY),
-						getRandomDoubleBetweenRange(0, maxZ / 3));
+				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 3), 0, getRandomDoubleBetweenRange(0, maxZ / 3));
 			}
 
 			usedCells.add(start);
 
 			Car c = new Car(start,
-					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-							getRandomDoubleBetweenRange(0, maxZ / 4)),
+					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), 0, getRandomDoubleBetweenRange(0, maxZ / 4)),
 					fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), carCounter++);
 
 			while (!Car.map.contains(c.getStartCell()) || !Car.map.contains(c.getStartCell()))
@@ -130,7 +125,7 @@ public class generateStaticRandomSample {
 			{
 
 				c = new Car(start,
-						new Cell(getRandomDoubleBetweenRange(maxX / 2, maxX), getRandomDoubleBetweenRange(0, maxY),
+						new Cell(getRandomDoubleBetweenRange(maxX / 2, maxX), 0,
 								getRandomDoubleBetweenRange(maxZ / 2, maxZ)),
 						fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), carCounter++);
 
@@ -161,26 +156,25 @@ public class generateStaticRandomSample {
 				fuelTanks.add(65);
 			}
 
-			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 6), getRandomDoubleBetweenRange(0, maxY),
+			Cell start = new Cell(getRandomDoubleBetweenRange(0, maxX / 6), 0,
 					getRandomDoubleBetweenRange(0, maxZ / 6));
 
 			while (usedCells.contains(start) || (!Car.map.contains(start))) {
-				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 6), getRandomDoubleBetweenRange(0, maxY),
-						getRandomDoubleBetweenRange(0, maxZ / 6));
+				start = new Cell(getRandomDoubleBetweenRange(0, maxX / 6), 0, getRandomDoubleBetweenRange(0, maxZ / 6));
 			}
 
 			usedCells.add(start);
 
 			Car c = new Car(start,
-					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), getRandomDoubleBetweenRange(0, maxY),
-							getRandomDoubleBetweenRange(0, maxZ / 4)),
+					new Cell(getRandomDoubleBetweenRange(0, maxX / 4), 0, getRandomDoubleBetweenRange(0, maxZ / 4)),
 					fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), carCounter++);
 
 			while (!Car.map.contains(c.getStartCell()) || !Car.map.contains(c.getStartCell()))
 
 			{
-				c = new Car(start, new Cell(getRandomDoubleBetweenRange(maxX + maxX / 6, maxX),
-						getRandomDoubleBetweenRange(0, maxY), getRandomDoubleBetweenRange(maxZ + maxZ / 6, maxZ)),
+				c = new Car(start,
+						new Cell(getRandomDoubleBetweenRange(maxX + maxX / 6, maxX), 0,
+								getRandomDoubleBetweenRange(maxZ + maxZ / 6, maxZ)),
 						fuelTanks.remove(getRandomDoubleBetweenRange(1, fuelTanks.size()) - 1), carCounter++);
 			}
 

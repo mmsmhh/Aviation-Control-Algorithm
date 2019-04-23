@@ -30,13 +30,6 @@ public class Main {
 
 		Report.setNumberOfCars(n);
 
-		System.out.println(n);
-		System.out.println(maxX);
-		System.out.println(maxY);
-		System.out.println(maxZ);
-
-		Scanner ss = new Scanner(System.in);
-
 		for (int i = 0; i < n; i++) {
 
 			String[] line = sc.nextLine().split(",");
@@ -44,6 +37,11 @@ public class Main {
 			Cell startCell = new Cell(Integer.parseInt(line[0]), Integer.parseInt(line[1]), Integer.parseInt(line[2]));
 			Cell goalCell = new Cell(Integer.parseInt(line[3]), Integer.parseInt(line[4]), Integer.parseInt(line[5]));
 			double fuelTank = Double.parseDouble(line[6]);
+
+			if (startCell.getY() != goalCell.getY()) {
+				System.err.println("Can't start or end at non zero height");
+				System.exit(0);
+			}
 
 			if (!Car.map.map.containsKey(startCell) || !Car.map.map.containsKey(goalCell)) {
 				System.err.println(startCell);

@@ -4,9 +4,15 @@ public class Map {
 
 	volatile Hashtable<Cell, Boolean> map;
 
+	private int maxX, maxY, maxZ;
+
 	public Map(int x, int y, int z) {
 
 		map = new Hashtable<Cell, Boolean>();
+
+		maxX = x;
+		maxY = y;
+		maxZ = z;
 
 		generateMap(x, y, z);
 
@@ -50,24 +56,30 @@ public class Map {
 	}
 
 	public boolean isCellBlocked(Cell cell) {
-
 		synchronized (map) {
-
 			return map.get(cell);
-
 		}
-
 	}
 
 	public boolean contains(Cell cell) {
-
 		return map.containsKey(cell);
-
 	}
 
 	@Override
 	public String toString() {
 		return map.toString();
+	}
+
+	public int getMaxX() {
+		return maxX;
+	}
+
+	public int getMaxY() {
+		return maxY;
+	}
+
+	public int getMaxZ() {
+		return maxZ;
 	}
 
 }

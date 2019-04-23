@@ -1,32 +1,32 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 
 public class Report {
 
-	ArrayList<String> carsFullReport = new ArrayList<String>();
-	ArrayList<String> carsMiniReport = new ArrayList<String>();
-
 	public static int numberOfCars = 0;
 
-	int numberOfArrivedCars = 0;
+	private int numberOfArrivedCars = 0;
 
-	int numberOfFailedCars = 0;
+	private int numberOfFailedCars = 0;
 
-	int numberOfNeverStartedCars = 0;
+	private int numberOfNeverStartedCars = 0;
 
-	FileWriter fileWriterFull;
+	private int numberOfEmergencyLandedCars = 0;
 
-	PrintWriter printWriterFull;
+	private FileWriter fileWriterFull;
 
-	FileWriter fileWriterMini;
+	private PrintWriter printWriterFull;
 
-	PrintWriter printWriterMini;
+	private FileWriter fileWriterMini;
 
-	FileWriter fileWriterMap;
+	private PrintWriter printWriterMini;
 
-	PrintWriter printWriterMap;
+	private FileWriter fileWriterMap;
+
+	private PrintWriter printWriterMap;
+
+	private boolean lastCarFlag = false;
 
 	public Report() {
 		try {
@@ -57,18 +57,23 @@ public class Report {
 		printWriterMap.println(line);
 	}
 
-	public void printReports() {
+	public synchronized void printReports() {
 
 		printWriterMini.println("Arrived cars: " + getNumberOfArrivedCars() + " Failed cars: " + getNumberOfFailedCars()
-				+ " Never run Cars: " + getnumberOfNeverStartedCars());
+				+ " Never run Cars: " + getnumberOfNeverStartedCars() + " Emergency Landed Cars: "
+				+ getnumberOfEmergencyLandedCars());
+
+		System.out.println("Arrived cars: " + getNumberOfArrivedCars() + " Failed cars: " + getNumberOfFailedCars()
+				+ " Never run Cars: " + getnumberOfNeverStartedCars() + " Emergency Landed Cars: "
+				+ getnumberOfEmergencyLandedCars());
+
 		printWriterMini.flush();
 
 		printWriterFull.close();
 
 		printWriterMini.close();
-		
-		printWriterMap.close();
 
+		printWriterMap.close();
 
 	}
 
@@ -92,6 +97,10 @@ public class Report {
 		return numberOfNeverStartedCars;
 	}
 
+	public int getnumberOfEmergencyLandedCars() {
+		return numberOfEmergencyLandedCars;
+	}
+
 	public synchronized int incrementNumberOfArrivedCars() {
 		numberOfArrivedCars++;
 		return numberOfArrivedCars;
@@ -107,12 +116,30 @@ public class Report {
 		return numberOfNeverStartedCars;
 	}
 
-	public int getNumberOfRemainingCars() {
-		return numberOfCars - (numberOfArrivedCars + numberOfFailedCars + numberOfNeverStartedCars);
+	public synchronized int incrementNumberOfEmergencyLandedCars() {
+		numberOfEmergencyLandedCars++;
+		return numberOfEmergencyLandedCars;
 	}
 
-	public boolean isLastCar() {
-		return getNumberOfRemainingCars() == 0;
+	public synchronized int getNumberOfRemainingCars() {
+		int doneCars = numberOfEmergencyLandedCars + numberOfArrivedCars + numberOfFailedCars
+				+ numberOfNeverStartedCars;
+
+		return numberOfCars - doneCars;
+	}
+
+	public synchronized boolean isLastCar() {
+
+		if (lastCarFlag) {
+			return false;
+		}
+
+		if (getNumberOfRemainingCars() == 0) {
+			lastCarFlag = true;
+			return true;
+		}
+
+		return false;
 	}
 
 }
