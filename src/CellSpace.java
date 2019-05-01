@@ -248,93 +248,115 @@ public class CellSpace {
 		cell = calculateKey(cell);
 	}
 
-	// TODO Refactor with predeccesors.
 	public LinkedList<Cell> getSuccessors(Cell state) {
 
 		LinkedList<Cell> successors = new LinkedList<Cell>();
 
 		Cell tempState;
 
-		// Generate the successors, starting at the immediate right and moving
-		// in a clockwise manner
-
 		tempState = makeNewCell(state.getX() + 1, state.getY() + 1, state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY() + 1, state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY() - 1, state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() + 1, state.getY() - 1, state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY() + 1, state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX(), state.getY() - 1, state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() + 1, state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() + 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() + 1, state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY(), state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY(), state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY(), state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() - 1, state.getZ() + 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() - 1, state.getZ(), new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		tempState = makeNewCell(state.getX() - 1, state.getY() - 1, state.getZ() - 1, new Costs(-1.0, -1.0));
-		successors.addFirst(tempState);
+		if (Car.map.contains(tempState) && (tempState.equals(goalCell) || tempState.getY() != 0))
+			successors.addFirst(tempState);
 
 		return successors;
 	}

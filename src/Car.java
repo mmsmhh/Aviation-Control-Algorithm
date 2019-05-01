@@ -3,43 +3,37 @@ import java.util.Map.Entry;
 
 public class Car implements Runnable {
 
-	private CellSpace space;
-
-	private double fuelTank;
-
-	private double initialFuelTank;
-
-	private double fuelFactor = 1d / 15d;
-
-	private double distanceTraveled;
-
-	private int carId;
-
 	public static volatile Map map;
 
 	public static volatile Report report = new Report();
 
-	public Car(Cell startCell, Cell goalCell, double fuelTank, int carId) {
+	private int carId;
+
+	private CellSpace space;
+
+	private FuelTank fuelTank;
+
+	private double distanceTraveled;
+
+	public Car(Cell start, Cell goal, double fuelLiters, int carId) {
 
 		this.carId = carId;
 
-		this.fuelTank = fuelTank;
-
-		this.initialFuelTank = fuelTank;
+		fuelTank = new FuelTank(fuelLiters);
 
 		space = new CellSpace();
 
-		space.setGoalCell(goalCell.getX(), goalCell.getY(), goalCell.getZ());
+		space.setGoalCell(goal.getX(), goal.getY(), goal.getZ());
 
-		space.setStartCell(startCell.getX(), startCell.getY(), startCell.getZ());
+		space.setStartCell(start.getX(), start.getY(), start.getZ());
 
 	}
 
 	@Override
 	public void run() {
 
-		report.addToFullReport(
-				carId + ": Engine started start cell is: " + getStartCell() + " goal cell is: " + getGoalCell());
+		report.addToFullReport(carId + ": Engine started start cell is: " + space.getStartCell() + " goal cell is: "
+				+ space.getGoalCell());
 
 		Path path = findPath();
 
@@ -56,8 +50,8 @@ public class Car implements Runnable {
 			report.addToMiniReport(carId + ": I started from " + space.getStartCell()
 					+ " and reached my final destination " + space.getGoalCell() + " with average speed of 60KM/H in "
 					+ Math.round((distanceTraveled / 60d) * 100d) / 100d + "H " + "I traveled a total distance of "
-					+ distanceTraveled + "KM My fuel tank in the beginning was " + initialFuelTank
-					+ " at the end it becomes " + Math.round((getFuelTank()) * 100d) / 100d);
+					+ distanceTraveled + "KM My fuel tank in the beginning was " + fuelTank.getInitialFuelTank()
+					+ " at the end it becomes " + Math.round((fuelTank.getFuelTank()) * 100d) / 100d);
 
 		} else if (path.getStatus() == 2) {
 
@@ -72,8 +66,8 @@ public class Car implements Runnable {
 			report.addToMiniReport(carId + ": I started from " + space.getStartCell()
 					+ " and reached my final destination " + space.getGoalCell() + " with average speed of 60KM/H in "
 					+ Math.round((distanceTraveled / 60d) * 100d) / 100d + "H " + "I traveled a total distance of "
-					+ distanceTraveled + "KM My fuel tank in the beginning was " + initialFuelTank
-					+ " at the end it becomes " + Math.round((getFuelTank()) * 100d) / 100d);
+					+ distanceTraveled + "KM My fuel tank in the beginning was " + fuelTank.getInitialFuelTank()
+					+ " at the end it becomes " + Math.round((fuelTank.getFuelTank()) * 100d) / 100d);
 
 		} else if (path.getStatus() == -1) {
 
@@ -87,12 +81,12 @@ public class Car implements Runnable {
 							+ " Emergency Landed Cars: " + report.getnumberOfEmergencyLandedCars() + " Never ran Cars: "
 							+ report.getnumberOfNeverStartedCars());
 
-			report.addToMiniReport(
-					carId + ": I started from " + space.getStartCell() + " and didn't reach my final destination "
-							+ space.getGoalCell() + " the remaining distance was " + (path.size() - 1)
-							+ "KM which needed " + Math.round(((path.size() - 1) * fuelFactor) * 100d) / 100d
-							+ " Liter in the fuel tank but the tank was having "
-							+ Math.round((getFuelTank()) * 100d) / 100d + " Liter at this period of time");
+			report.addToMiniReport(carId + ": I started from " + space.getStartCell()
+					+ " and didn't reach my final destination " + space.getGoalCell() + " the remaining distance was "
+					+ (path.size() - 1) + "KM which needed "
+					+ Math.round(((path.size() - 1) * fuelTank.getFuelFactor()) * 100d) / 100d
+					+ " Liter in the fuel tank but the tank was having "
+					+ Math.round((fuelTank.getFuelTank()) * 100d) / 100d + " Liter at this period of time");
 		} else if (path.getStatus() == -2) {
 
 			report.incrementnumberOfNeverStartedCars();
@@ -105,21 +99,21 @@ public class Car implements Runnable {
 							+ " Emergency Landed Cars: " + report.getnumberOfEmergencyLandedCars() + " Never ran Cars: "
 							+ report.getnumberOfNeverStartedCars());
 
-			report.addToMiniReport(
-					carId + ": never started from " + space.getStartCell() + " and didn't reach my final destination "
-							+ space.getGoalCell() + " the remaining distance was " + (path.size() - 1)
-							+ "KM which needed " + Math.round(((path.size() - 1) * fuelFactor) * 100d) / 100d
-							+ " Liter in the fuel tank but the tank was having "
-							+ Math.round((getFuelTank()) * 100d) / 100d + " Liter at this period of time");
+			report.addToMiniReport(carId + ": never started from " + space.getStartCell()
+					+ " and didn't reach my final destination " + space.getGoalCell() + " the remaining distance was "
+					+ (path.size() - 1) + "KM which needed "
+					+ Math.round(((path.size() - 1) * fuelTank.getFuelFactor()) * 100d) / 100d
+					+ " Liter in the fuel tank but the tank was having "
+					+ Math.round((fuelTank.getFuelTank()) * 100d) / 100d + " Liter at this period of time");
 		}
 
 		if (report.isLastCar()) {
 
-			for (Entry<Cell, Boolean> entry : Car.map.map.entrySet()) {
+			for (Entry<Cell, MapPoint> entry : Car.map.map.entrySet()) {
 
 				Cell key = entry.getKey();
 
-				boolean value = entry.getValue();
+				boolean value = entry.getValue().isBlocked();
 
 				if (value)
 					report.addToMapReport(key + " = " + value);
@@ -137,14 +131,14 @@ public class Car implements Runnable {
 
 		LinkedList<Cell> potentialNextCells = new LinkedList<Cell>();
 
-		if (!isFuelEnough(space.getStartCell(), space.getGoalCell())) {
+		if (!fuelTank.isFuelEnough(space.getStartCell(), space.getGoalCell())) {
 			path.setStatus(-2);
 			return path;
 		}
 
 		Cell currentCell = space.getStartCell();
 
-		map.blockCell(currentCell);
+		map.blockCell(currentCell, carId);
 
 		path.add(currentCell);
 
@@ -158,6 +152,10 @@ public class Car implements Runnable {
 
 		while (!path.isComplete()) {
 
+			int blockCount = 0;
+
+			LinkedList<Cell> blockedCells = new LinkedList<Cell>();
+
 			potentialNextCells = space.getSuccessors(currentCell);
 
 			if (potentialNextCells.isEmpty()) {
@@ -170,7 +168,9 @@ public class Car implements Runnable {
 
 			for (Cell potentialNextCell : potentialNextCells) {
 
-				if (!map.contains(potentialNextCell) || map.isCellBlocked(potentialNextCell)) {
+				if (map.isCellBlocked(potentialNextCell)) {
+					blockCount++;
+					blockedCells.add(potentialNextCell);
 					continue;
 				} else {
 					isTrapped = true;
@@ -181,15 +181,12 @@ public class Car implements Runnable {
 						+ Geometry.euclideanDistance(space.getStartCell(), potentialNextCell);
 				costToMove += space.getG(potentialNextCell);
 
-				// If the cost to move is essentially zero ...
 				if (space.isClose(costToMove, minimumCost)) {
 					if (0 > euclideanDistance) {
-
 						minimumCost = costToMove;
 						minimumCell = potentialNextCell;
 					}
 				} else if (costToMove < minimumCost) {
-
 					minimumCost = costToMove;
 					minimumCell = potentialNextCell;
 				}
@@ -198,15 +195,21 @@ public class Car implements Runnable {
 
 			if (isTrapped) {
 
-				potentialNextCells.clear();
-
-				if (!map.contains(minimumCell) || map.isCellBlocked(minimumCell)) {
+				if (map.isCellBlocked(minimumCell)) {
 					continue;
 				} else {
-					map.blockCell(minimumCell);
+					map.blockCell(minimumCell, carId);
 				}
 
-				report.addToFullReport(carId + ": " + "I am moving now to " + currentCell);
+				report.addToFullReport(carId + ": " + "I am moving now to " + minimumCell + " there are " + blockCount
+						+ " blocked cells out of " + potentialNextCells.size() + " cells");
+
+				if (blockCount > 0) {
+
+					for (Cell c : blockedCells)
+						report.addToFullReport(carId + ": " + c.toString() + " by " + map.getBlockingID(c));
+
+				}
 
 				map.unblockCell(currentCell);
 
@@ -214,13 +217,13 @@ public class Car implements Runnable {
 
 				distanceTraveled++;
 
-				decrementFuelTank(fuelFactor);
+				fuelTank.decrementFuelTank(fuelTank.getFuelFactor());
 
 				path.add(currentCell);
 
 				report.addToFullReport(carId + ": I am currently in " + currentCell);
 
-				if (isTankEmpty() && !path.isComplete()) {
+				if (fuelTank.isTankEmpty() && !path.isComplete()) {
 					map.unblockCell(currentCell);
 					path.setStatus(-1);
 					return path;
@@ -230,9 +233,9 @@ public class Car implements Runnable {
 
 			} else {
 
-				decrementFuelTank(fuelFactor / 4);
+				fuelTank.decrementFuelTank(fuelTank.getFuelFactor() / 4);
 
-				if (isTankEmpty() && !path.isComplete()) {
+				if (fuelTank.isTankEmpty() && !path.isComplete()) {
 					map.unblockCell(currentCell);
 					path.setStatus(-1);
 					return path;
@@ -269,9 +272,9 @@ public class Car implements Runnable {
 
 					distanceTraveled++;
 
-					decrementFuelTank(fuelFactor);
+					fuelTank.decrementFuelTank(fuelTank.getFuelFactor());
 
-					if (isTankEmpty()) {
+					if (fuelTank.isTankEmpty()) {
 						path.setStatus(-1);
 						for (Cell c : landing) {
 							map.unblockCell(c);
@@ -302,7 +305,6 @@ public class Car implements Runnable {
 		return path;
 	}
 
-	// needs refactoring
 	private Path generateLandingPath(Cell currentCell) {
 
 		Path path = new Path();
@@ -331,12 +333,16 @@ public class Car implements Runnable {
 			Cell newCell = new Cell(x, y, z);
 
 			if (map.isCellBlocked(newCell)) {
+
 				y++;
+
 				x -= sign;
 
-				decrementFuelTank(fuelFactor / 8);
+				sign = sign * -1;
 
-				if (isTankEmpty()) {
+				fuelTank.decrementFuelTank(fuelTank.getFuelFactor() / 8);
+
+				if (fuelTank.isTankEmpty()) {
 					map.unblockCell(currentCell);
 					path.setStatus(-1);
 					for (Cell c : path) {
@@ -347,7 +353,8 @@ public class Car implements Runnable {
 
 				continue;
 			}
-			map.blockCell(newCell);
+
+			map.blockCell(newCell, carId);
 
 			path.add(newCell);
 
@@ -358,32 +365,10 @@ public class Car implements Runnable {
 
 	private boolean emergencyLandingCheck(Cell cell) {
 
-		double fuelGoalCellRatio = (Geometry.euclideanDistance(cell, getGoalCell()) * fuelFactor) / getFuelTank();
+		double fuelGoalCellRatio = (Geometry.euclideanDistance(cell, space.getGoalCell()) * fuelTank.getFuelFactor())
+				/ fuelTank.getFuelTank();
 
-		return fuelGoalCellRatio > 0.7;
-	}
-
-	private boolean isFuelEnough(Cell startCell, Cell goalCell) {
-
-		return Geometry.euclideanDistance(startCell, goalCell) * fuelFactor <= getFuelTank();
-	}
-
-	private boolean isTankEmpty() {
-		return fuelTank == 0;
-	}
-
-	private void decrementFuelTank(double value) {
-
-		fuelTank -= value;
-
-		if (fuelTank < fuelFactor) {
-			fuelTank = 0;
-		}
-
-	}
-
-	public double getFuelTank() {
-		return fuelTank;
+		return fuelGoalCellRatio > 0.5;
 	}
 
 	public Cell getStartCell() {
@@ -394,4 +379,7 @@ public class Car implements Runnable {
 		return space.getGoalCell();
 	}
 
+	public double getFuelTank() {
+		return fuelTank.getFuelTank();
+	}
 }
