@@ -47,11 +47,17 @@ public class Car implements Runnable {
 							+ " Emergency Landed Cars: " + report.getnumberOfEmergencyLandedCars() + " Never ran Cars: "
 							+ report.getnumberOfNeverStartedCars());
 
-			report.addToMiniReport(carId + ": I started from " + space.getStartCell()
-					+ " and reached my final destination " + space.getGoalCell() + " with average speed of 60KM/H in "
-					+ Math.round((distanceTraveled / 60d) * 100d) / 100d + "H " + "I traveled a total distance of "
-					+ distanceTraveled + "KM My fuel tank in the beginning was " + fuelTank.getInitialFuelTank()
-					+ " at the end it becomes " + Math.round((fuelTank.getFuelTank()) * 100d) / 100d);
+//			report.addToMiniReport(carId + ": from" + space.getStartCell()
+//					+ " to " + space.getGoalCell() + "speed 60KM/H in "
+//					+ Math.round((distanceTraveled / 60d) * 100d) / 100d + "H");
+
+			report.addToMiniReport(carId + ": start cell" + space.getStartCell() + " goal cell " + space.getGoalCell()
+					+ " fuel tank: " + fuelTank.getInitialFuelTank() + "Liter total distance travelled " + distanceTraveled
+					+ "KM remaning fuel " + Math.round((fuelTank.getFuelTank()) * 100d) / 100d   +"Liter");
+
+//					"I traveled a total distance of "
+//					+ distanceTraveled + "KM My fuel tank in the beginning was " + fuelTank.getInitialFuelTank()
+//					+ " at the end it becomes " + Math.round((fuelTank.getFuelTank()) * 100d) / 100d);
 
 		} else if (path.getStatus() == 2) {
 
